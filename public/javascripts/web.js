@@ -1,9 +1,10 @@
 var socket = io.connect('http://'+window.location.hostname + ":3003");
 socket.on('news', function (data) {
+	if(!data.text) return;
 	console.log(data);
 	var fb_tweet;
-	if(data.retweeted_status){
-		fb_tweet = "@" + data.retweetStatus.user.screen_name + " – " + data.retweetStatus.text;
+	if(typeof data.retweeted_status == 'object'){
+		fb_tweet = "@" + data.retweeted_status.user.screen_name + " – " + data.retweeted_status.text;
 	}else{
 		fb_tweet = "@" + data.user.screen_name + " – " + data.text;
 	}
