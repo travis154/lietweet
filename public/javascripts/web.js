@@ -1,6 +1,12 @@
 var socket = io.connect('http://'+window.location.hostname + ":3003");
 socket.on('news', function (data) {
 	console.log(data);
+	var fb_tweet;
+	if(data.retweeted_status){
+		fb_tweet = "@" + data.retweetStatus.user.screen_name + " – " + data.retweetStatus.text;
+	}else{
+		fb_tweet = "@" + data.user.screen_name + " – " + data.text;
+	}
 	if(data.user){
 		var a = String(data.text);
 		_.each(data.entities.urls,function(i){a =  a.replace(i.url,"<a href='"+i.expanded_url+"'>"+i.expanded_url+"</a>"); console.log("<a href='"+i.expanded_url+"'>"+i.expanded_url+"</a>") });
@@ -25,7 +31,7 @@ socket.on('news', function (data) {
 				} 
 			}).join('');
 		}
-		var a = $("<section class='tweet' style='display:none' data-id='"+data.id_str+"'>"+"<span style='color:greenYellow;font-weight:bold'>"+data.user.screen_name+"</span> " +tweet+" <a class='panel retweet'>RT</a> <a class='panel favorite'>FV</a>"+pics+"</section>");
+		var a = $("<section data-fb='"+ escape(removeURL(fb_tweet))+"' class='tweet' style='display:none' data-id='"+data.id_str+"'>"+"<span style='color:greenYellow;font-weight:bold'>"+data.user.screen_name+"</span> " +tweet+" <a class='panel retweet'>RT</a> <a class='panel favorite'>FV</a> <a class='panel fb'>FB</a>"+pics+"</section>");
 		$("body").prepend(a);
 		a.fadeIn();
 	}
@@ -112,4 +118,23 @@ $(function(){
 		$(this).css("visibility","visible");
 		//TODO: fadeout if cancelled
 	});
+	$(".fb").live('click',function(){
+		var self = $(this).parent();
+		var user = self.text().split(' ')[0];
+		var message = self.attr('data-fb');
+		var obj = {};
+		obj.message = message;
+		if(self.find('img')){
+			obj.img = self.find('img').attr('src');
+		}
+		$.post('/facebook', obj);
+		$(this).css("visibility","visible");
+	});
 });
+
+function removeURL(text) {
+    var urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, function(url) {
+        return '';
+    })
+}

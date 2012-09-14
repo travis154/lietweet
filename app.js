@@ -11,12 +11,12 @@ var util = require('util'),
 var _ = require('underscore');
 var mongoose = require('mongoose');
 var db = mongoose.createConnection('localhost','twitter');
-
+var fb = require('fb');
+var arg = require('optimist').argv;
 var s = db.model('tweets', new mongoose.Schema({tweet:{}}));
+//var settings = require('./settings.js');
 
 xx=null;
-
-
 var app = module.exports = express.createServer();
 var io = require('socket.io').listen(app,{log:false});
 // Configuration
@@ -25,6 +25,20 @@ io.sockets.on('connection', function (socket) {
   //console.log(a);
 io.sockets.emit('news',{a:1});
 });
+
+
+
+var twit = new twitter({
+    consumer_key: arg.ck,
+    consumer_secret: arg.cs,
+    access_token_key: arg.atk,
+    access_token_secret: arg.ats
+});
+
+
+
+fb.setAccessToken(arg.fb);
+
 
 //console.log(_.methods(twit));
 
@@ -85,7 +99,19 @@ app.get('/favorite/:id',function(req,res){
 	twit.createFavorite(req.params.id,function(x){});
 	res.end();
 });
-
+app.post('/facebook',function(req,res){
+	var img = req.body.img;
+	var message = req.body.message;
+	fb.api('341148972644349/photos', 'post', 
+	{
+		url:img,
+		message: unescape(message),
+	}
+	, function(res){
+		console.log(res);
+	});
+	res.end();
+});
 app.post("/tweet",function(req,res){
 	twit.updateStatus(req.body.tweet,function(){});
 	res.end();
