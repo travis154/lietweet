@@ -23,7 +23,7 @@ socket.on('news', function (data) {
 			tweet = String(data.text);
 		var pics = '';
 		if(data.entities.media){
-			pics = _.map(data.entities.media,function(e){ if(e.type == "photo") return extract(e.media_url).get().render();}).join('');
+			pics = _.map(data.entities.media,function(e){ if(e.type == "photo") return extract(e.media_url).get().render().replace('http','https');}).join('');
 		}else if(data.entities.urls){
 			
 			pics = _.map(data.entities.urls,function(e){ 
