@@ -14,6 +14,7 @@ var db = mongoose.createConnection('localhost','twitter');
 var fb = require('fb');
 var arg = require('optimist').argv;
 var s = db.model('tweets', new mongoose.Schema({tweet:{}}));
+var URI = require("URIjs");
 //var settings = require('./settings.js');
 
 xx=null;
@@ -39,37 +40,40 @@ var twit = new twitter({
 
 fb.setAccessToken(arg.fb);
 
-
-//console.log(_.methods(twit));
-
 twit.stream('user', {track:'epicloser'}, function(stream) {
-    stream.on('data', function(data) {
-	var twt = new s({tweet:data});
-	twt.save();
-    	if(xx)xx.emit('news', data); //else console.log(xx);
-        //console.log(JSON.stringify(data).replace(/\n/g,''));
-	//console.log(data);
-        //console.log(data.friends.length);
-        if(data.user){
-        	var a = String(data.text);
-        	var b = a.match(/(^|\s)@(\w+)/g);
-        	var tweet;
-        	if(b){
-        		b.forEach(function(x){
-        			var n = tweet ? tweet : a;
-        			tweet = new String(n.replace(new RegExp(x,"g"),x.trim() == "@epicloser" ? x.red.bold : x.green.bold));
-        		});
-        		
-        	}else
-        		tweet = String(data.text);
-        //	console.log(String(data.user.screen_name).green.bold + " " +tweet);
-        }
-        
-        //var tw = new tweet({tweet:data});
-        //tw.save(function(){ });
-    });
+	stream.on('data', function(data) {
+		var twt = new s({tweet:data});
+		//twt.save();
+		if(xx)xx.emit('news', data);
+		if(data.user){
+			var fb_tweet;
+			if(typeof data.retweeted_status == 'object'){
+				fb_tweet = "@" + data.retweeted_status.user.screen_name + " – " + data.retweeted_status.text;
+			}else{
+				fb_tweet = "@" + data.user.screen_name + " – " + data.text;
+			}
+			var pics = '';
+			if(data.entities.media){
+				_.each(data.entities.media,function(e){ 
+					if(e.type == "photo") {
+						var img = extract(e.media_url).get().render().replace('http','https');
+						if(img) postFB(img, fb_tweet);
+					}
+				});
+			}else if(data.entities.urls){
+				_.each(data.entities.urls,function(e){ 
+					if(e.expanded_url){  
+						var img = extract(e.expanded_url).get().render();
+						if(img) postFB(img, fb_tweet);
+					} 
+				});
+			}
+		}
+	});
+	stream.on('error', function(err){
+		console.log(err)
+	});
 });
-
 app.configure(function(){
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
@@ -90,6 +94,50 @@ app.configure('production', function(){
 
 // Routes
 
+function postFB(url, msg){
+	fb.api('3890078733770/photos', 'post', 
+	{        
+		url:url,
+		message: msg,
+	}
+	, function(res){
+		if(res.error){
+			postFB(url,msg);
+		}
+	});
+}
+
+function extract(url){
+	if("undefined" === typeof URI)
+		throw "URI NOT FOUND";
+	var url = url;
+	return {
+		get : function(){
+			var i = URI(url);
+			if(i.host() == "i.imgur.com" && i.suffix().search(/jpg|png|gif/) != -1){
+				this.extracted = url;
+				return this;
+			}else if(i.host() == "instagr.am"){
+				this.extracted = url + "media/?size=l";
+				return this;
+			}else if(i.host() == "p.twimg.com"){
+				this.extracted = url;
+				return this;
+			}else if(i.host() == "twitpic.com"){
+				this.extracted = "http://twitpic.com/show/large"+i.path();
+				return this;
+			}else if(i.host() == "akamaihd.net" && i.suffix().search(/jpg|png|gif/) != -1){
+				this.extracted = url;
+				return this;
+			}else{
+				return this
+			}
+		},
+		render : function(){
+			return this.extracted;
+		}
+	}
+}
 app.get('/', routes.index);
 app.get('/retweet/:id',function(req,res){
 	twit.retweetStatus(req.params.id,function(x){});
@@ -101,9 +149,9 @@ app.get('/favorite/:id',function(req,res){
 });
 app.post('/facebook',function(req,res){
 	var img = req.body.img;
-	var message = req.body.message;
-	fb.api('341148972644349/photos', 'post', 
-	{
+	var message = unescape(req.body.message);
+	fb.api('3890078733770/photos', 'post', 
+	{        
 		url:img,
 		message: unescape(message),
 	}
