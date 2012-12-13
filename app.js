@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  */
@@ -120,7 +119,7 @@ function extract(url){
 			}else if(i.host() == "instagr.am"){
 				this.extracted = url + "media/?size=l";
 				return this;
-			}else if(i.host() == "p.twimg.com"){
+			}else if(i.host().indexOf("twimg.com") !== -1){
 				this.extracted = url;
 				return this;
 			}else if(i.host() == "twitpic.com"){
