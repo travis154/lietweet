@@ -12,7 +12,7 @@ var mongoose = require('mongoose');
 var db = mongoose.createConnection('localhost','twitter');
 var fb = require('fb');
 var arg = require('optimist').argv;
-var s = db.model('tweets', new mongoose.Schema({tweet:{}}));
+var s = db.model('tweets', new mongoose.Schema({tweet:{}},{strict:false}));
 var URI = require("URIjs");
 //var settings = require('./settings.js');
 
@@ -42,6 +42,7 @@ twit.stream('statuses/filter',{track:'nodejs,node.js,javascript,maldives,mohamed
 	s.on('data', function(d){
 		if(xx)xx.emit('news', d);
 		if(arg.save){
+			var twt = new s({tweet:data});
 			twt.save();
 		}
 	});
@@ -50,8 +51,8 @@ twit.stream('statuses/filter',{track:'nodejs,node.js,javascript,maldives,mohamed
 
 twit.stream('user', {track:'epicloser'}, function(stream) {
 	stream.on('data', function(data) {
-		var twt = new s({tweet:data});
 		if(arg.save){
+			var twt = new s({tweet:data});
 			twt.save();
 		}
 		if(xx)xx.emit('news', data);
