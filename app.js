@@ -38,36 +38,18 @@ var twit = new twitter({
 
 
 fb.setAccessToken(arg.fb);
+twit.stream('statuses/filter',{track:'nodejs,node.js,javascript,maldives,mohamednasheed,ganjabo,haveeru,drwaheed,baaghee,baagee,golhaa,golhaabo,raaje,rajje,rajjey,rayyithun,gaumu','locations':'73.2,4,73.7,4.6,73,-0.7,73.4,-0.1,72.9,0.1,73.5,0.9,72.7,1.7,73.1,3.8,72.7,4.9,73.7,7.3'}, function(s){
+	s.on('data', function(d){
+		if(xx)xx.emit('news', d);
+	});
+	s.on('error', console.log);
+});
 
 twit.stream('user', {track:'epicloser'}, function(stream) {
 	stream.on('data', function(data) {
 		var twt = new s({tweet:data});
 		//twt.save();
 		if(xx)xx.emit('news', data);
-		if(data.user){
-			var fb_tweet;
-			if(typeof data.retweeted_status == 'object'){
-				fb_tweet = "@" + data.retweeted_status.user.screen_name + " – " + data.retweeted_status.text;
-			}else{
-				fb_tweet = "@" + data.user.screen_name + " – " + data.text;
-			}
-			var pics = '';
-			if(data.entities.media){
-				_.each(data.entities.media,function(e){ 
-					if(e.type == "photo") {
-						var img = extract(e.media_url).get().render().replace('http','https');
-						if(img) postFB(img, fb_tweet);
-					}
-				});
-			}else if(data.entities.urls){
-				_.each(data.entities.urls,function(e){ 
-					if(e.expanded_url){  
-						var img = extract(e.expanded_url).get().render();
-						if(img) postFB(img, fb_tweet);
-					} 
-				});
-			}
-		}
 	});
 	stream.on('error', function(err){
 		console.log(err)
