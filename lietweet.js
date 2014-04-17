@@ -12,7 +12,7 @@ var mongoose = require('mongoose');
 var db = mongoose.createConnection('localhost','twitter');
 var fb = require('fb');
 var arg = require('optimist').argv;
-var s = db.model('tweets', new mongoose.Schema({{}},{strict:false}));
+var s = db.model('tweets', new mongoose.Schema({},{strict:false}));
 var URI = require("URIjs");
 //var settings = require('./settings.js');
 
