@@ -41,6 +41,9 @@ fb.setAccessToken(arg.fb);
 twit.stream('statuses/filter',{track:'nodejs,node.js,javascript,maldives,mohamednasheed,ganjabo,haveeru,drwaheed,baaghee,baagee,golhaa,golhaabo,raaje,rajje,rajjey,rayyithun,gaumu','locations':'73.2,4,73.7,4.6,73,-0.7,73.4,-0.1,72.9,0.1,73.5,0.9,72.7,1.7,73.1,3.8,72.7,4.9,73.7,7.3'}, function(s){
 	s.on('data', function(d){
 		if(xx)xx.emit('news', d);
+		if(arg.save){
+			twt.save();
+		}
 	});
 	s.on('error', console.log);
 });
@@ -48,7 +51,9 @@ twit.stream('statuses/filter',{track:'nodejs,node.js,javascript,maldives,mohamed
 twit.stream('user', {track:'epicloser'}, function(stream) {
 	stream.on('data', function(data) {
 		var twt = new s({tweet:data});
-		//twt.save();
+		if(arg.save){
+			twt.save();
+		}
 		if(xx)xx.emit('news', data);
 	});
 	stream.on('error', function(err){
