@@ -9,10 +9,10 @@ var util = require('util'),
     twitter = require('ntwitter');
 var _ = require('underscore');
 var mongoose = require('mongoose');
-var db = mongoose.createConnection('localhost','twitter');
+var db = mongoose.createConnection('127.0.0.1','twitter');
 var fb = require('fb');
 var arg = require('optimist').argv;
-var s = db.model('tweets', new mongoose.Schema({},{strict:false}));
+
 var URI = require("URIjs");
 //var settings = require('./settings.js');
 
@@ -34,16 +34,14 @@ var twit = new twitter({
     access_token_key: arg.atk,
     access_token_secret: arg.ats
 });
-
-
+var save_tweet = db.model('tweets', new mongoose.Schema({},{strict:false}));
 
 fb.setAccessToken(arg.fb);
 twit.stream('statuses/filter',{track:'nodejs,node.js,javascript,maldives,mohamednasheed,ganjabo,haveeru,drwaheed,baaghee,baagee,golhaa,golhaabo,raaje,rajje,rajjey,rayyithun,gaumu','locations':'73.2,4,73.7,4.6,73,-0.7,73.4,-0.1,72.9,0.1,73.5,0.9,72.7,1.7,73.1,3.8,72.7,4.9,73.7,7.3'}, function(s){
-	s.on('data', function(d){
-		if(xx)xx.emit('news', d);
-		if(arg.save){
-			var twt = new s({tweet:d});
-			twt.save();
+	s.on('data', function(data){
+		if(xx)xx.emit('news', data);
+		if(arg.save && data && !data.length){
+			new save_tweet(data).save();
 		}
 	});
 	s.on('error', console.log);
@@ -51,9 +49,8 @@ twit.stream('statuses/filter',{track:'nodejs,node.js,javascript,maldives,mohamed
 
 twit.stream('user', {track:'epicloser'}, function(stream) {
 	stream.on('data', function(data) {
-		if(arg.save){
-			var twt = new s({tweet:data});
-			twt.save();
+		if(arg.save && data && !data.length){
+			new save_tweet(data).save();
 		}
 		if(xx)xx.emit('news', data);
 	});
