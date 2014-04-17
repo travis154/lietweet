@@ -42,7 +42,7 @@ twit.stream('statuses/filter',{track:'nodejs,node.js,javascript,maldives,mohamed
 	s.on('data', function(d){
 		if(xx)xx.emit('news', d);
 		if(arg.save){
-			var twt = new s({tweet:data});
+			var twt = new s({tweet:d});
 			twt.save();
 		}
 	});
