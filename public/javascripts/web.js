@@ -1,10 +1,15 @@
 var socket = io.connect('http://'+window.location.hostname + ":3003");
+ids = {};
 socket.on('news', function (data) {
 	if(!data.text) return;
 	console.log(data);
 	var fb_tweet;
 	if(typeof data.retweeted_status == 'object'){
+		ids[data.retweeted_status.id] = ids[data.retweeted_status.id] ? ids[data.retweeted_status.id] + 1 : 1;
 		fb_tweet = "@" + data.retweeted_status.user.screen_name + " – " + data.retweeted_status.text;
+		if(ids[data.retweeted_status.id] == 5){
+			return;
+		}
 	}else{
 		fb_tweet = "@" + data.user.screen_name + " – " + data.text;
 	}
