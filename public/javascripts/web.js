@@ -7,7 +7,7 @@ socket.on('news', function (data) {
 	if(typeof data.retweeted_status == 'object'){
 		ids[data.retweeted_status.id] = ids[data.retweeted_status.id] ? ids[data.retweeted_status.id] + 1 : 1;
 		fb_tweet = "@" + data.retweeted_status.user.screen_name + " – " + data.retweeted_status.text;
-		if(ids[data.retweeted_status.id] == 5){
+		if(ids[data.retweeted_status.id] > 5){
 			return;
 		}
 	}else{
